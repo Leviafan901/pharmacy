@@ -1,8 +1,5 @@
 package com.epam.pharmacy.dao.mysql;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,14 +12,6 @@ import com.epam.pharmacy.exceptions.PersistException;
 
 public class MySqlMedicineDao extends AbstractDao<Medicine, Long> {
 
-	private static final int ID_INDEX = 8;
-	private static final int PRICE_INDEX = 7;
-	private static final int NEED_PRESCRIPTION_INDEX = 6;
-	private static final int PICTURE_INDEX = 5;
-	private static final int DOSAGE_MG_INDEX = 4;
-	private static final int COUNT_INDEX = 3;
-	private static final int COUNT_IN_STORE_INDEX = 2;
-	private static final int NAME_INDEX = 1;
 	private static final String DELETE_QUERY = "DELETE FROM Medicine WHERE id = ?;";
 	private static final String UPDATE_QUERY = "UPDATE Medicine SET name=? count_in_store=? count=? dosage_mg=? picture=? need_prescription=? price=? WHERE id = ?;";
 	private static final String CREATE_QUERY = "INSERT INTO Medicine (name, count_in_store, count, dosage_mg, picture, need_prescription, price) VALUES (?, ?, ?, ?, ?, ?, ?);";
@@ -66,11 +55,9 @@ public class MySqlMedicineDao extends AbstractDao<Medicine, Long> {
 				Medicine medicine = new Medicine();
 				medicine.setId(resultSet.getLong("id"));
 				medicine.setName(resultSet.getString("name"));
-				medicine.setCountInStore(resultSet.getLong("last_name"));
+				medicine.setCountInStore(resultSet.getLong("count_in_store"));
 				medicine.setCount(resultSet.getInt("count"));
 				medicine.setDosageMg(resultSet.getInt("dosage_mg"));
-				Blob picture = resultSet.getBlob("picture");
-				medicine.setPicture(picture.getBytes(1, (int) picture.length()));
 				medicine.setNeedPrescription(resultSet.getBoolean("need_prescription"));
 				medicine.setPrice(resultSet.getBigDecimal("price"));
 				result.add(medicine);
@@ -83,14 +70,13 @@ public class MySqlMedicineDao extends AbstractDao<Medicine, Long> {
 
 	@Override
 	protected void prepareStatementForInsert(PreparedStatement statement, Medicine medicine) throws PersistException {
-		try (InputStream stream = new ByteArrayInputStream(medicine.getPicture())) {
-			statement.setString(NAME_INDEX, medicine.getName());
-			statement.setLong(COUNT_IN_STORE_INDEX, medicine.getCountInStore());
-			statement.setInt(COUNT_INDEX, medicine.getCount());
-			statement.setInt(DOSAGE_MG_INDEX, medicine.getDosageMg());
-			statement.setBinaryStream(PICTURE_INDEX, stream);
-			statement.setBoolean(NEED_PRESCRIPTION_INDEX, medicine.isNeedPrescription());
-			statement.setBigDecimal(PRICE_INDEX, medicine.getPrice());
+		try {
+			statement.setString(1, medicine.getName());
+			statement.setLong(2, medicine.getCountInStore());
+			statement.setInt(3, medicine.getCount());
+			statement.setInt(4, medicine.getDosageMg());
+			statement.setBoolean(5, medicine.isNeedPrescription());
+			statement.setBigDecimal(6, medicine.getPrice());
 		} catch (Exception e) {
 			throw new PersistException(e);
 		}
@@ -98,14 +84,14 @@ public class MySqlMedicineDao extends AbstractDao<Medicine, Long> {
 
 	@Override
 	protected void prepareStatementForUpdate(PreparedStatement statement, Medicine medicine) throws PersistException {
-		try (InputStream stream = new ByteArrayInputStream(medicine.getPicture())) {
-			statement.setString(NAME_INDEX, medicine.getName());
-			statement.setLong(COUNT_IN_STORE_INDEX, medicine.getCountInStore());
-			statement.setInt(COUNT_INDEX, medicine.getCount());
-			statement.setInt(DOSAGE_MG_INDEX, medicine.getDosageMg());
-			statement.setBinaryStream(PICTURE_INDEX, stream);
-			statement.setBoolean(NEED_PRESCRIPTION_INDEX, medicine.isNeedPrescription());
-			statement.setLong(ID_INDEX, medicine.getId());
+		try {
+			statement.setString(1, medicine.getName());
+			statement.setLong(2, medicine.getCountInStore());
+			statement.setInt(3, medicine.getCount());
+			statement.setInt(4, medicine.getDosageMg());
+			statement.setBoolean(5, medicine.isNeedPrescription());
+			statement.setBigDecimal(6, medicine.getPrice());
+			statement.setLong(7, medicine.getId());
 		} catch (Exception e) {
 			throw new PersistException(e);
 		}

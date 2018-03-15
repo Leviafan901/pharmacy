@@ -13,7 +13,7 @@ import com.epam.pharmacy.exceptions.PersistException;
 public interface GenericDao<T extends Identified<PK>, PK extends Serializable> {
 
     /** Create new row in DB about object */
-    public T persist(T object) throws PersistException;
+    public T insert(T object) throws PersistException;
 
     /** Return object with row where key or null */
     public T getByPK(PK key) throws PersistException;

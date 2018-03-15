@@ -32,8 +32,16 @@ public abstract class AbstractDao<T extends Identified<PK>, PK extends Long> imp
     public AbstractDao(Connection connection) throws PersistException {
         this.connection = connection;
     }
+    
+    public Connection getConnection() {
+		return connection;
+	}
 
-    /**
+	public void setConnection(Connection connection) {
+		this.connection = connection;
+	}
+
+	/**
      * Method, realize SQL-query of selections row's from DB.
      * <p/>
      * SELECT * FROM [Table]
@@ -71,7 +79,7 @@ public abstract class AbstractDao<T extends Identified<PK>, PK extends Long> imp
     /**
      * Method, parse ResultSet and return List of entities object's.
      */
-    protected abstract List<T> parseResultSet(ResultSet rs) throws PersistException;
+    protected abstract List<T> parseResultSet(ResultSet resultSet) throws PersistException;
 
     /**
      * Method, determinate insert-query to DB with the field's of argument object.
@@ -84,7 +92,7 @@ public abstract class AbstractDao<T extends Identified<PK>, PK extends Long> imp
     protected abstract void prepareStatementForUpdate(PreparedStatement statement, T object) throws PersistException;
 
     @Override
-    public T persist(T object) throws PersistException {
+    public T insert(T object) throws PersistException {
     	ResultSet resultSet = null;
         try {
         	if(this.createStatement == null) {
@@ -194,8 +202,7 @@ public abstract class AbstractDao<T extends Identified<PK>, PK extends Long> imp
             resultSet = selectStatement.executeQuery();
             list = parseResultSet(resultSet);
         } catch (Exception e) {
-            throw new PersistException("Error: can't get all rows"
-            		+ " from DB! Object.getAll()", e);
+            throw new PersistException("Error: can't get all rows from DB! Object.getAll()", e);
         } finally {
         	if (resultSet != null) {
         		try {
@@ -229,13 +236,6 @@ public abstract class AbstractDao<T extends Identified<PK>, PK extends Long> imp
     	            }
     	        }
     	    }
-    	if(connection != null) {
-    		try {
-    			connection.close();
-            } catch (Exception exception){
-           	    throw new PersistException("Error:can't close connection!", exception);
-            } 
-        }
     	if (e != null) {
 		     throw new PersistException(e);
     	}

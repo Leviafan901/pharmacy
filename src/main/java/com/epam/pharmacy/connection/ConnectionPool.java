@@ -9,9 +9,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.epam.pharmacy.exceptions.ConnectionException;
 
 public class ConnectionPool {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionPool.class);
 
 	private static final String PASSWORD = "password";
 	private static final String USER = "user";
@@ -22,6 +27,7 @@ public class ConnectionPool {
 	private static AtomicBoolean isInstanceAvailable = new AtomicBoolean(true);
 	private static Lock locker = new ReentrantLock();
 	private final static int CONNECTION_POOL_SIZE = 10;
+	private final static int MAX_AWAIT_TIME = 10;
 	private ResourcesQueue<Connection> connections = null;
 
 	private ConnectionPool() throws ConnectionException {
@@ -45,7 +51,7 @@ public class ConnectionPool {
 	}
 
 	private void init() throws ConnectionException {
-		connections = new ResourcesQueue<Connection>(CONNECTION_POOL_SIZE);
+		connections = new ResourcesQueue<Connection>(CONNECTION_POOL_SIZE, MAX_AWAIT_TIME);
 		try {
 			while (connections.size() < CONNECTION_POOL_SIZE) {
 				Class.forName(getProperties().getProperty(DRIVER));
@@ -92,4 +98,19 @@ public class ConnectionPool {
 			locker.unlock();
 		}
 	}
+	
+	public void closeAllConnections() {
+        LOGGER.info("Close all connection in connection pool");
+        for (Connection connection : connections.getResources()) {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                LOGGER.error("Can't close all connection in connection pool", e);
+            }
+        }
+    }
+
+    public int size() {
+        return connections.size();
+    }
 }

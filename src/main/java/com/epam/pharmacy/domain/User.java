@@ -2,9 +2,10 @@ package com.epam.pharmacy.domain;
 
 import java.io.Serializable;
 
+import com.epam.pharmacy.dao.Identified;
 import com.epam.pharmacy.domain.enumeration.Role;
 
-public class User implements Serializable {
+public class User implements Serializable, Identified<Long> {
 
 	private Long id;
 	private String name;
